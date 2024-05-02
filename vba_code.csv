@@ -1,0 +1,139 @@
+Sub stockData():
+
+    Dim ws As Worksheet
+    For Each ws In Worksheets
+    
+    ' declare variables
+    Dim i As Long
+    Dim ticker As String
+    Dim cell_vol As LongLong
+    Dim total_vol As LongLong
+        
+    Dim k As Long
+        
+    Dim t_open As Double
+    Dim t_close As Double
+    Dim price_change As Double
+    Dim perc_change As Double
+        
+    Dim t_inc As String
+    Dim perc_inc As Double
+    Dim t_dec As String
+    Dim perc_dec As Double
+    Dim t_vol As String
+    Dim t_vol_val As Double
+        
+    t_inc = ""
+    perc_inc = 0
+    t_dec = ""
+    perc_dec = 0
+    t_vol = ""
+    t_vol_val = 0
+        
+        ' find the last line of the active worksheet
+        Dim lr As Long
+        lr = ActiveSheet.Cells(ActiveSheet.Rows.Count, 1).End(xlUp).Row
+        
+        total_vol = 0
+        k = 2
+        
+        ws.Range("I1").Value = "Ticker"
+        ws.Range("J1").Value = "Quarterly Change"
+        ws.Range("K1").Value = "Percent Change"
+        ws.Range("L1").Value = "Total Volume"
+        
+        ws.Range("P1").Value = "Ticker"
+        ws.Range("Q1").Value = "Value"
+        ws.Range("O2").Value = "Greatest % Increase"
+        ws.Range("O3").Value = "Greatest % Decrease"
+        ws.Range("O4").Value = "Greatest Total Volume"
+        
+        ' assign first ticker
+        t_open = ws.Cells(2, 3).Value
+        
+        For i = 2 To lr:
+            ticker = ws.Cells(i, 1).Value
+            cell_vol = ws.Cells(i, 7).Value
+            
+            ' LOOP through row 2 to the last row
+            ' check ticker column next row
+            ' IF same add volume to total volume
+            ' IF different add vol and write out total volume
+            ' reset total volume to zero
+            If (ws.Cells(i + 1, 1).Value <> ticker) Then ' not same :(
+                total_vol = total_vol + cell_vol
+                    
+                ' ticker price change
+                t_close = ws.Cells(i, 6).Value
+                price_change = t_close - t_open
+                
+                ' ticker percent change
+                If (t_open > 0) Then
+                    perc_change = price_change / t_open
+                Else
+                    perc_change = 0
+                End If
+                            
+                ' spit out data here
+                ws.Cells(k, 9).Value = ticker
+                ws.Cells(k, 10).Value = price_change
+                ws.Cells(k, 11).Value = FormatPercent(perc_change)
+                ws.Cells(k, 12).Value = total_vol
+                
+                
+                ' add conditional formatting
+                If (price_change < 0) Then
+                    ws.Cells(k, 10).Interior.ColorIndex = 3
+                ElseIf (price_change > 0) Then
+                    ws.Cells(k, 10).Interior.ColorIndex = 4
+                Else
+                    ws.Cells(k, 10).Interior.ColorIndex = 2
+                End If
+                
+                ' find the bestest percentages!
+                If (perc_change > perc_inc) Then
+                    perc_max = perc_change
+                    t_max = ticker
+                ElseIf (perc_change < perc_min) Then
+                    perc_min = perc_change
+                    t_min = ticker
+                End If
+                
+                ' find the bestest volume
+                If (total_vol > t_vol_val) Then
+                    t_vol_val = total_vol
+                    t_vol = ticker
+                End If
+                
+                'reset
+                total_vol = 0
+                k = k + 1
+                t_open = ws.Cells(i + 1, 3).Value
+                
+            Else ' same :)
+                total_vol = total_vol + cell_vol
+            End If
+        Next i
+        
+        'spit out annoying data here
+        ws.Cells(2, 16).Value = t_max
+        ws.Cells(2, 17).Value = FormatPercent(perc_max)
+        ws.Cells(3, 16).Value = t_min
+        ws.Cells(3, 17).Value = FormatPercent(perc_min)
+        ws.Cells(4, 16).Value = t_vol
+        ws.Cells(4, 17).Value = t_vol_val
+        
+        
+    Next ws
+End Sub
+
+Sub reset()
+    For Each ws In Worksheets
+        'reset all values
+        ws.Range("I:Q").Value = ""
+        ws.Range("I:Q").Interior.ColorIndex = 2
+    Next ws
+End Sub
+
+
+
