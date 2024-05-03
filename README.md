@@ -1,2 +1,3 @@
 # VBA-challenge
-In this challenge I use VBA to create a program that will automatically compile stock market data and provide insights.
+In this challenge I use VBA and apply logic to read stock data entries and provide valuable insight.
+
